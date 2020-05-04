@@ -16,6 +16,7 @@ template<typename T>
 AGHMatrix<T> jacobi(AGHMatrix<T> a, AGHMatrix<T> b) {
     int n = a.get_rows();
     AGHMatrix<T> x(n, 1, 0);
+    AGHMatrix<T> last(n, 1, 0);
     AGHMatrix<T> L(n, n, 0);
     AGHMatrix<T> D(n, n, 0);
     AGHMatrix<T> U(n, n, 0);
@@ -26,15 +27,12 @@ AGHMatrix<T> jacobi(AGHMatrix<T> a, AGHMatrix<T> b) {
         D(i, i) = 1.0 / a(i, i);
     }
 
-    AGHMatrix<T> M = D * (L + U) * (-1);
-    AGHMatrix<T>* prev = nullptr;
+    AGHMatrix<T> M = (L + U) * (-1);
 
-    for (int i = 0; i < 100; i++) {
-        AGHMatrix<T> tmp = (M * x) + (D * b);
+    for (;;) {
+        AGHMatrix<T> tmp = D * ((M * x) + b);
+        if (is_close_enough(x, tmp, 0.00001)) break;
         x = tmp;
-        if (prev != nullptr && is_close_enough(*prev, tmp, 10)) break;
-        x = tmp;
-        prev = &x;
     }
 
     return x;
